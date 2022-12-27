@@ -29,4 +29,5 @@ table.Delete(newEntry)
 I've done a little bit of profiling and had the following observations:
 * The radix sort from https://github.com/twotwotwo/sorts seems a bit faster than [sort.Slice](https://pkg.go.dev/sort#Slice) and [slices.Sort](https://pkg.go.dev/golang.org/x/exp/slices#Sort)
 * Unsurprisingly `binary.LittleEndian.PutUint32(bI, uint32(i))` seems to be a lot faster than `[]byte(fmt.Sprint())`
+
 There's probably more that can be done but these were the obvious things.
