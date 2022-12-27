@@ -22,9 +22,13 @@ type Table struct {
 }
 
 func New(keyOne int, keyTwo int, entries []netip.Addr) (Table, error) {
+	return NewWithTableSize(keyOne, keyTwo, len(entries)*int(multiple), entries)
+}
+
+func NewWithTableSize(keyOne int, keyTwo int, size int, entries []netip.Addr) (Table, error) {
 	table := Table{
 		entries: entries,
-		size:    len(entries) * int(multiple),
+		size:    size,
 		keyOne:  keyOne,
 		keyTwo:  keyTwo,
 	}
