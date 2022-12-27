@@ -1,6 +1,7 @@
 package rama_rendezvous
 
 import (
+	"fmt"
 	"net/netip"
 	"testing"
 
@@ -227,4 +228,31 @@ func TestAdd(t *testing.T) {
 	assert.Equal(t, 71, count1)
 	assert.Equal(t, 73, count2)
 	assert.Equal(t, 78, count3)
+}
+
+func BenchmarkGenerateThreeEntries(b *testing.B) {
+	ips := []netip.Addr{
+		netip.MustParseAddr("192.168.1.1"),
+		netip.MustParseAddr("192.168.1.2"),
+		netip.MustParseAddr("192.168.1.3"),
+	}
+
+	for n := 0; n < b.N; n++ {
+		New(1234567812345678, 1234567812345678, ips)
+	}
+}
+
+func BenchmarkGenerate1kEntries(b *testing.B) {
+	ips := []netip.Addr{}
+
+	for i := 0; i < 250; i++ {
+		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.168.1.%v", i)))
+		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.168.2.%v", i)))
+		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.168.3.%v", i)))
+		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.168.4.%v", i)))
+	}
+
+	for n := 0; n < b.N; n++ {
+		New(1234567812345678, 1234567812345678, ips)
+	}
 }
