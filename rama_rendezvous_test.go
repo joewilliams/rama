@@ -245,6 +245,11 @@ func TestGetKeys(t *testing.T) {
 	assert.Equal(t, 1234, keyTwo)
 }
 
+func TestBadNew(t *testing.T) {
+	_, err := New(0, 0, []netip.Addr{})
+	assert.NotNil(t, err)
+}
+
 func BenchmarkGenerateThreeEntries(b *testing.B) {
 	ips := []netip.Addr{
 		netip.MustParseAddr("192.168.1.1"),

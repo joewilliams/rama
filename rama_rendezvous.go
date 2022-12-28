@@ -105,6 +105,6 @@ func (t *Table) generateTable() {
 	t.table = table
 }
 
-func hash(seed int, key int, data []byte) uint64 {
-	return siphash.Hash(uint64(seed), uint64(key), data)
+func hash(keyOne int, keyTwo int, data []byte) uint64 {
+	return siphash.Hash(uint64(keyOne), uint64(keyTwo), data)
 }
