@@ -15,7 +15,7 @@ func TestNew(t *testing.T) {
 		netip.MustParseAddr("192.168.1.3"),
 	}
 
-	table, err := New(1234567812345678, 1234567812345678, ips)
+	table, err := New(1234567812345678, ips)
 	assert.Nil(t, err)
 
 	assert.Equal(t, len(ips)*multiple, len(table.table))
@@ -42,35 +42,35 @@ func TestNew(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 116, count0)
-	assert.Equal(t, 91, count1)
-	assert.Equal(t, 93, count2)
+	assert.Equal(t, 104, count0)
+	assert.Equal(t, 98, count1)
+	assert.Equal(t, 98, count2)
 
 	assert.Equal(t, len(table.table), count0+count1+count2)
 
 	testMap := map[string]string{
-		"192.168.200.1":  "192.168.1.1",
-		"192.168.200.2":  "192.168.1.1",
-		"192.168.200.3":  "192.168.1.1",
+		"192.168.200.1":  "192.168.1.2",
+		"192.168.200.2":  "192.168.1.3",
+		"192.168.200.3":  "192.168.1.2",
 		"192.168.200.4":  "192.168.1.3",
-		"192.168.200.5":  "192.168.1.1",
-		"192.168.200.6":  "192.168.1.2",
+		"192.168.200.5":  "192.168.1.3",
+		"192.168.200.6":  "192.168.1.3",
 		"192.168.200.7":  "192.168.1.2",
-		"192.168.200.8":  "192.168.1.1",
-		"192.168.200.9":  "192.168.1.3",
+		"192.168.200.8":  "192.168.1.3",
+		"192.168.200.9":  "192.168.1.2",
 		"192.168.200.10": "192.168.1.3",
-		"192.168.200.11": "192.168.1.1",
-		"192.168.200.12": "192.168.1.3",
-		"192.168.200.13": "192.168.1.2",
-		"192.168.200.14": "192.168.1.2",
-		"192.168.200.15": "192.168.1.3",
+		"192.168.200.11": "192.168.1.2",
+		"192.168.200.12": "192.168.1.2",
+		"192.168.200.13": "192.168.1.1",
+		"192.168.200.14": "192.168.1.1",
+		"192.168.200.15": "192.168.1.2",
 		"192.168.200.16": "192.168.1.1",
-		"192.168.200.17": "192.168.1.2",
+		"192.168.200.17": "192.168.1.1",
 		"192.168.200.18": "192.168.1.1",
 		"192.168.200.19": "192.168.1.1",
-		"192.168.200.20": "192.168.1.1",
+		"192.168.200.20": "192.168.1.2",
 		"192.168.200.21": "192.168.1.1",
-		"192.168.200.22": "192.168.1.2",
+		"192.168.200.22": "192.168.1.1",
 	}
 
 	for k, v := range testMap {
@@ -90,7 +90,7 @@ func TestDelete(t *testing.T) {
 		netip.MustParseAddr("192.168.1.6"),
 	}
 
-	table, err := New(1234567812345678, 1234567812345678, ips)
+	table, err := New(1234567812345678, ips)
 	assert.Nil(t, err)
 
 	testMap := map[string]netip.Addr{
@@ -163,11 +163,11 @@ func TestDelete(t *testing.T) {
 	}
 
 	assert.Equal(t, 0, count0)
-	assert.Equal(t, 111, count1)
-	assert.Equal(t, 116, count2)
-	assert.Equal(t, 119, count3)
-	assert.Equal(t, 134, count4)
-	assert.Equal(t, 120, count5)
+	assert.Equal(t, 128, count1)
+	assert.Equal(t, 117, count2)
+	assert.Equal(t, 129, count3)
+	assert.Equal(t, 124, count4)
+	assert.Equal(t, 102, count5)
 
 	for k, v := range testMap {
 		//fmt.Printf("%v / %v\n", k, v)
@@ -190,7 +190,7 @@ func TestAdd(t *testing.T) {
 		netip.MustParseAddr("192.168.1.3"),
 	}
 
-	table, err := New(1234567812345678, 1234567812345678, ips)
+	table, err := New(1234567812345678, ips)
 	assert.Nil(t, err)
 
 	// adding 192.168.1.4 should affect everything
@@ -224,10 +224,10 @@ func TestAdd(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 78, count0)
-	assert.Equal(t, 69, count1)
-	assert.Equal(t, 71, count2)
-	assert.Equal(t, 82, count3)
+	assert.Equal(t, 76, count0)
+	assert.Equal(t, 68, count1)
+	assert.Equal(t, 77, count2)
+	assert.Equal(t, 79, count3)
 }
 
 func TestGetKeys(t *testing.T) {
@@ -237,16 +237,15 @@ func TestGetKeys(t *testing.T) {
 		netip.MustParseAddr("192.168.1.3"),
 	}
 
-	table, err := New(9999, 1234, ips)
+	table, err := New(9999, ips)
 	assert.Nil(t, err)
 
-	keyOne, keyTwo := table.GetKeys()
-	assert.Equal(t, 9999, keyOne)
-	assert.Equal(t, 1234, keyTwo)
+	key := table.GetKey()
+	assert.Equal(t, 9999, key)
 }
 
 func TestBadNew(t *testing.T) {
-	_, err := New(0, 0, []netip.Addr{})
+	_, err := New(0, []netip.Addr{})
 	assert.NotNil(t, err)
 }
 
@@ -258,7 +257,7 @@ func BenchmarkGenerateThreeEntries(b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		New(1234, 9876, ips)
+		New(1234, ips)
 	}
 }
 
@@ -273,6 +272,22 @@ func BenchmarkGenerate1kEntries(b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		New(1234, 9876, ips)
+		New(1234, ips)
+	}
+}
+
+func BenchmarkGenerateLookup(b *testing.B) {
+	ips := []netip.Addr{
+		netip.MustParseAddr("192.168.1.1"),
+		netip.MustParseAddr("192.168.1.2"),
+		netip.MustParseAddr("192.168.1.3"),
+	}
+
+	table, _ := New(1234, ips)
+
+	lookupIP := netip.MustParseAddr("192.168.1.4")
+
+	for n := 0; n < b.N; n++ {
+		table.Get(lookupIP)
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/dchest/siphash"
+	"github.com/OneOfOne/xxhash"
 	"github.com/twotwotwo/sorts/sortutil"
 )
 
@@ -20,34 +20,28 @@ type Table struct {
 	members []netip.Addr
 	table   []netip.Addr
 	size    int
-	keyOne  int
-	keyTwo  int
+	key     int
 }
 
-func New(keyOne int, keyTwo int, members []netip.Addr) (Table, error) {
-	return NewWithTableSize(keyOne, keyTwo, len(members)*int(multiple), members)
+func New(key int, members []netip.Addr) (Table, error) {
+	return NewWithTableSize(key, len(members)*int(multiple), members)
 }
 
-func NewWithTableSize(keyOne int, keyTwo int, size int, members []netip.Addr) (Table, error) {
+func NewWithTableSize(key int, size int, members []netip.Addr) (Table, error) {
 	if len(members) < 1 {
 		return Table{}, fmt.Errorf("too few members: %v", len(members))
 	}
 
 	rand.Seed(time.Now().UnixNano())
 
-	if keyOne == 0 {
-		keyOne = rand.Int()
-	}
-
-	if keyTwo == 0 {
-		keyTwo = rand.Int()
+	if key == 0 {
+		key = rand.Int()
 	}
 
 	table := Table{
 		members: members,
 		size:    size,
-		keyOne:  keyOne,
-		keyTwo:  keyTwo,
+		key:     key,
 	}
 
 	table.generateTable()
@@ -55,12 +49,12 @@ func NewWithTableSize(keyOne int, keyTwo int, size int, members []netip.Addr) (T
 	return table, nil
 }
 
-func (t *Table) GetKeys() (int, int) {
-	return t.keyOne, t.keyTwo
+func (t *Table) GetKey() int {
+	return t.key
 }
 
 func (t *Table) Get(ip netip.Addr) netip.Addr {
-	sum := hash(t.keyOne, t.keyTwo, ip.AsSlice())
+	sum := hash(t.key, ip.AsSlice())
 	index := sum & uint64(t.size-1)
 	return t.table[index]
 }
@@ -93,7 +87,7 @@ func (t *Table) generateTable() {
 
 		for e, entry := range t.members {
 			// hash the entry plus the table row index
-			sum := hash(t.keyOne, t.keyTwo, append(entry.AsSlice(), bI...))
+			sum := hash(t.key, append(entry.AsSlice(), bI...))
 			rowEntries[sum] = entry
 			rowKeys[e] = sum
 		}
@@ -105,6 +99,6 @@ func (t *Table) generateTable() {
 	t.table = table
 }
 
-func hash(keyOne int, keyTwo int, data []byte) uint64 {
-	return siphash.Hash(uint64(keyOne), uint64(keyTwo), data)
+func hash(key int, data []byte) uint64 {
+	return xxhash.Checksum64S(data, uint64(key))
 }
