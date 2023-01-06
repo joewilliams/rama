@@ -28,4 +28,5 @@ I've done a little bit of profiling and had the following observations:
 * The radix sort from https://github.com/twotwotwo/sorts seems a bit faster than [sort.Slice](https://pkg.go.dev/sort#Slice) and [slices.Sort](https://pkg.go.dev/golang.org/x/exp/slices#Sort)
 * Unsurprisingly `binary.LittleEndian.PutUint32(bI, uint32(i))` seems to be a lot faster than `[]byte(fmt.Sprint())`
 * Previously this used [siphash](https://en.wikipedia.org/wiki/SipHash) but for this use case I think a seeded [xxhash](https://cyan4973.github.io/xxHash/) is equivalently safe in terms of collisions and hash flood resistance and is a bit faster. Hash speed is not a huge factor in this use case though.
+
 There's probably more that can be done but these were the obvious things.
