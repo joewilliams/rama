@@ -35,7 +35,7 @@ func NewWithTableSize(key uint64, size uint32, members []netip.Addr) (Table, err
 	rand.Seed(time.Now().UnixNano())
 
 	if key == 0 {
-		key = uint64(rand.Int63())
+		key = rand.Uint64()
 	}
 
 	table := Table{
@@ -83,7 +83,7 @@ func (t *Table) generateTable() {
 		rowKeys := make([]uint64, len(t.members))
 
 		bI := make([]byte, 4)
-		binary.LittleEndian.PutUint32(bI, uint32(i))
+		binary.LittleEndian.PutUint32(bI, i)
 
 		for e, entry := range t.members {
 			// hash the entry plus the table row index
