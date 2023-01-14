@@ -1,4 +1,4 @@
-cpuprofile.out
-memprofile.out 
+*cpuprofile.out
+*memprofile.out 
 profile.out
-rama.test
+*.test

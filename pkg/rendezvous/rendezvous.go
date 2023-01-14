@@ -1,4 +1,4 @@
-package rama_rendezvous
+package rendezvous
 
 import (
 	"encoding/binary"
@@ -19,15 +19,15 @@ const (
 type Table struct {
 	members []netip.Addr
 	table   []netip.Addr
-	size    int
-	key     int
+	size    uint32
+	key     uint64
 }
 
-func New(key int, members []netip.Addr) (Table, error) {
-	return NewWithTableSize(key, len(members)*int(multiple), members)
+func New(key uint64, members []netip.Addr) (Table, error) {
+	return NewWithTableSize(key, uint32(len(members)*int(multiple)), members)
 }
 
-func NewWithTableSize(key int, size int, members []netip.Addr) (Table, error) {
+func NewWithTableSize(key uint64, size uint32, members []netip.Addr) (Table, error) {
 	if len(members) < 1 {
 		return Table{}, fmt.Errorf("too few members: %v", len(members))
 	}
@@ -35,7 +35,7 @@ func NewWithTableSize(key int, size int, members []netip.Addr) (Table, error) {
 	rand.Seed(time.Now().UnixNano())
 
 	if key == 0 {
-		key = rand.Int()
+		key = uint64(rand.Int63())
 	}
 
 	table := Table{
@@ -49,7 +49,7 @@ func NewWithTableSize(key int, size int, members []netip.Addr) (Table, error) {
 	return table, nil
 }
 
-func (t *Table) GetKey() int {
+func (t *Table) GetKey() uint64 {
 	return t.key
 }
 
@@ -78,7 +78,7 @@ func (t *Table) Delete(ip netip.Addr) {
 func (t *Table) generateTable() {
 	table := make([]netip.Addr, t.size)
 
-	for i := 0; i < t.size; i++ {
+	for i := uint32(0); i < t.size; i++ {
 		rowEntries := map[uint64]netip.Addr{}
 		rowKeys := make([]uint64, len(t.members))
 
@@ -99,6 +99,6 @@ func (t *Table) generateTable() {
 	t.table = table
 }
 
-func hash(key int, data []byte) uint64 {
+func hash(key uint64, data []byte) uint64 {
 	return xxhash.Checksum64S(data, uint64(key))
 }

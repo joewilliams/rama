@@ -1,4 +1,4 @@
-package rama_rendezvous
+package rendezvous
 
 import (
 	"fmt"
@@ -241,7 +241,7 @@ func TestGetKeys(t *testing.T) {
 	assert.Nil(t, err)
 
 	key := table.GetKey()
-	assert.Equal(t, 9999, key)
+	assert.Equal(t, uint64(9999), key)
 }
 
 func TestBadNew(t *testing.T) {
