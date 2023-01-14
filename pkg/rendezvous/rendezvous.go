@@ -54,9 +54,7 @@ func (t *Table) GetKey() uint64 {
 }
 
 func (t *Table) Get(ip netip.Addr) netip.Addr {
-	sum := hash(t.key, ip.AsSlice())
-	index := sum & uint64(t.size-1)
-	return t.table[index]
+	return t.table[hash(t.key, ip.AsSlice())&uint64(t.size-1)]
 }
 
 func (t *Table) Add(ip netip.Addr) {
@@ -77,12 +75,13 @@ func (t *Table) Delete(ip netip.Addr) {
 
 func (t *Table) generateTable() {
 	table := make([]netip.Addr, t.size)
+	rowKeys := make([]uint64, len(t.members))
+	bI := make([]byte, 4)
 
 	for i := uint32(0); i < t.size; i++ {
-		rowEntries := map[uint64]netip.Addr{}
-		rowKeys := make([]uint64, len(t.members))
 
-		bI := make([]byte, 4)
+		rowEntries := map[uint64]netip.Addr{}
+
 		binary.LittleEndian.PutUint32(bI, i)
 
 		for e, entry := range t.members {

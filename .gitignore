@@ -1,4 +1,2 @@
-*cpuprofile.out
-*memprofile.out 
-profile.out
+*.out
 *.test
