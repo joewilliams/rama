@@ -3,9 +3,10 @@
 This repo contains data structure implementations in golang. These implementations are usually focused on use in network related services (i.e. load balancers, etc) and storing stuff like IP addresses rather than any other type of data.
 
 ### General Approach
-* __Minimalism__ - the implementations here try to do only one thing well and don't tend to be generalized. Additionally, they usually only expose standard golang types like maps or arrays as output. I try to use as few external dependencies as possible but use a few for things like sorting and hashing.
-* __Purity__ - this library is mostly procedural golang. If you need concurrency, channels, locking, etc build it on top or send me a convincing PR.
-* __Network focused__ - this library focuses on networking related use cases. Most things here store the [`netip.Addr` type](https://pkg.go.dev/net/netip#Addr), this makes the implementations simpler than being generalized.
+* __Minimalism__ - The implementations here try to do only one thing well and don't tend to be generalized. I try to use as few external dependencies as possible but use a few for things like sorting and hashing. My goal is simple, easily understandable and straight forward implementations without too many bells or whistles.
+* __Purity__ - This library is mostly procedural golang. If you need concurrency, channels, locking, etc build it on top or send me a convincing PR. Additionally, it usually only exposes standard golang types like maps or arrays as output. I won't make you rely on the types in this library in your code.
+* __Network focused__ - This library focuses on networking related use cases. Most things here store the [`netip.Addr` type](https://pkg.go.dev/net/netip#Addr), this makes the implementations simpler than being generalized.
+* __Correct and Fast__ - I generally try to get a implementation working correctly add tests and then make in simple and fast. If an optimization makes the code hard to understand I usually avoid it.
 
 ### Rendezvous Hash
 
