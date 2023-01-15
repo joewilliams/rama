@@ -1,6 +1,11 @@
 ## Rendezvous with Rama
 
-This repo contains hash table implementations in golang. These implementations are usually focused on use in network related services (i.e. load balancers, etc) and storing stuff like IP addresses rather than any other type of data.
+This repo contains data structure implementations in golang. These implementations are usually focused on use in network related services (i.e. load balancers, etc) and storing stuff like IP addresses rather than any other type of data.
+
+### General Approach
+* __Minimalism__ - the implementations here try to do only one thing well and don't tend to be generalized. Additionally, they usually only expose standard golang types like maps or arrays as output. I try to use as few external dependencies as possible but use a few for things like sorting and hashing.
+* __Purity__ - this library is mostly procedural golang. If you need concurrency, channels, locking, etc build it on top or send me a convincing PR.
+* __Network focused__ - this library focuses on networking related use cases. Most things here store the [`netip.Addr` type](https://pkg.go.dev/net/netip#Addr), this makes the implementations simpler than being generalized.
 
 ### Rendezvous Hash
 
@@ -24,13 +29,10 @@ table.Add(newEntry)
 table.Delete(newEntry)
 ```
 
-I've done a little bit of profiling and had the following observations:
+Profiling and performance observations:
 * The radix sort from https://github.com/twotwotwo/sorts seems a bit faster than [sort.Slice](https://pkg.go.dev/sort#Slice) and [slices.Sort](https://pkg.go.dev/golang.org/x/exp/slices#Sort)
 * Unsurprisingly `binary.LittleEndian.PutUint32(bI, uint32(i))` seems to be a lot faster than `[]byte(fmt.Sprint())`
 * Previously this used [siphash](https://en.wikipedia.org/wiki/SipHash) but for this use case I think a seeded [xxhash](https://cyan4973.github.io/xxHash/) is equivalently safe in terms of collisions and hash flood resistance and is a bit faster. Hash speed is not a huge factor in this use case though.
-
-There's probably more that can be done but these were the obvious things.
-
 
 ### HeavyKeeper
 
@@ -54,5 +56,5 @@ results := topk.Get()
 
 Profiling and performance observations:
 * `minHeap.find(ip)` uses a sort and binary search (using `netip.Addr.Less()`) rather than linear search, if `k` is large this should help. `find` happens on each `Add` I think this is as good as it gets but finding a shortcut would be nice.
-* I am not a fan of needing `minHeap.find(ip)` on each `Add` so to get more out of that sort and binary search I store the IP address as bytes and it's hashed fingerprint in each node in the heap. This means if an entry is in the top-k we won't have to `ip.AsSlice()` nor `xxhash.Checksum64S` when we add it. So IPs we see often have better performance than ones we see rarely.
+* I am not a fan of needing `minHeap.find(ip)` on each `Add` so to get more out of that sort and binary search I store the IP address as bytes and it's fingerprint in each node in the heap. This means if an entry is in the top-k we won't have to `ip.AsSlice()` nor `xxhash.Checksum64S` when we add it. This reduces allocations quite a bit. So IPs we see often have better performance than ones we see rarely.
 * Under the covers `Rank()` uses the parallel radix sort I used in the rendezvous hash. Again this probably only helps when `k` is large.
