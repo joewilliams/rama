@@ -240,7 +240,7 @@ func TestGetKeys(t *testing.T) {
 	table, err := New(9999, ips)
 	assert.Nil(t, err)
 
-	key := table.GetKey()
+	key := table.Key()
 	assert.Equal(t, uint64(9999), key)
 }
 

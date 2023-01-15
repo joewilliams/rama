@@ -49,7 +49,7 @@ func NewWithTableSize(key uint64, size uint32, members []netip.Addr) (Table, err
 	return table, nil
 }
 
-func (t *Table) GetKey() uint64 {
+func (t *Table) Key() uint64 {
 	return t.key
 }
 
@@ -78,15 +78,18 @@ func (t *Table) generateTable() {
 	rowKeys := make([]uint64, len(t.members))
 	bI := make([]byte, 4)
 
+	entrySlices := make([][]byte, len(t.members))
+	for e, entry := range t.members {
+		entrySlices[e] = entry.AsSlice()
+	}
+
 	for i := uint32(0); i < t.size; i++ {
-
 		rowEntries := map[uint64]netip.Addr{}
-
 		binary.LittleEndian.PutUint32(bI, i)
 
 		for e, entry := range t.members {
 			// hash the entry plus the table row index
-			sum := hash(t.key, append(entry.AsSlice(), bI...))
+			sum := hash(t.key, append(entrySlices[e], bI...))
 			rowEntries[sum] = entry
 			rowKeys[e] = sum
 		}
