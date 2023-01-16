@@ -32,9 +32,8 @@ func NewWithTableSize(key uint64, size uint32, members []netip.Addr) (Table, err
 		return Table{}, fmt.Errorf("too few members: %v", len(members))
 	}
 
-	rand.Seed(time.Now().UnixNano())
-
 	if key == 0 {
+		rand.Seed(time.Now().UnixNano())
 		key = rand.Uint64()
 	}
 
