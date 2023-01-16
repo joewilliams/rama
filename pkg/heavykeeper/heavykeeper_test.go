@@ -72,10 +72,43 @@ func TestSmall(t *testing.T) {
 	assert.Equal(t, wantRank, topk.Rank())
 }
 
-// TODO: nondeterministic test with:
-// * a large number of entries
-// * relatively small width*depth
-// * make sure we are within error bounds
+func TestLarge(t *testing.T) {
+	testMap := map[string]int{
+		"192.0.2.1":                         1000,
+		"192.0.2.2":                         5000,
+		"192.0.2.3":                         100,
+		"2001:0db8:85a3:1:1:8a2e:0370:7334": 300,
+		"192.0.2.100":                       50,
+		"192.0.2.101":                       10,
+		"192.0.2.200":                       1,
+		"192.0.2.201":                       75,
+		"192.0.2.170":                       25,
+		"192.0.2.65":                        500,
+		"192.0.2.34":                        2000,
+		"192.0.2.122":                       1200,
+		"192.0.2.111":                       10,
+		"192.0.2.12":                        80,
+		"192.0.2.113":                       800,
+		"192.0.2.114":                       90,
+		"192.0.2.15":                        123,
+		"192.0.2.116":                       234,
+		"192.0.2.117":                       345,
+		"192.0.2.118":                       85,
+		"192.0.2.21":                        8,
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	topk := New(5, 100, 5, 0.9, 1234567812345678)
+
+	for k, v := range testMap {
+		for i := 0; i < v; i++ {
+			topk.Add(netip.MustParseAddr(k))
+		}
+	}
+
+	//fmt.Println(topk.Get())
+}
 
 func BenchmarkAdd(b *testing.B) {
 	rand.Seed(time.Now().UnixNano())
