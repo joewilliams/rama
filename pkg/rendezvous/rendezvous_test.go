@@ -241,21 +241,6 @@ func BenchmarkGenerateThreeEntries(b *testing.B) {
 	}
 }
 
-func BenchmarkGenerate1kEntries(b *testing.B) {
-	ips := []netip.Addr{}
-
-	for i := 0; i < 250; i++ {
-		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.0.1.%v", i)))
-		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", i)))
-		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.0.3.%v", i)))
-		ips = append(ips, netip.MustParseAddr(fmt.Sprintf("192.0.4.%v", i)))
-	}
-
-	for n := 0; n < b.N; n++ {
-		New(1234, ips)
-	}
-}
-
 func BenchmarkGenerateLookup(b *testing.B) {
 	ips := []netip.Addr{
 		netip.MustParseAddr("192.0.2.1"),
@@ -267,7 +252,7 @@ func BenchmarkGenerateLookup(b *testing.B) {
 
 	lookupIP := netip.MustParseAddr("192.0.2.4")
 
-	for n := 0; n < 1000; n++ {
+	for n := 0; n < b.N; n++ {
 		table.Get(lookupIP)
 	}
 }
