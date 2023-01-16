@@ -1,6 +1,7 @@
 package heavykeeper
 
 import (
+	"bytes"
 	"container/heap"
 	"net/netip"
 
@@ -43,9 +44,18 @@ func (h *Heap) get(i int) node {
 	return h.nodes[i]
 }
 
-func (h *Heap) find(ip netip.Addr) (int, bool) {
+func (h *Heap) findByIP(ip netip.Addr) (int, bool) {
 	for i := range h.nodes {
 		if h.nodes[i].ip == ip {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func (h *Heap) findByBytes(data []byte) (int, bool) {
+	for i := range h.nodes {
+		if bytes.Equal(h.nodes[i].data, data) {
 			return i, true
 		}
 	}
@@ -66,7 +76,13 @@ func (n nodes) Len() int {
 }
 
 func (n nodes) Less(i, j int) bool {
-	return (n[i].count < n[j].count) || (n[i].count == n[j].count && n[i].ip.Less(n[j].ip))
+	// if we have IPs use those
+	if n[i].ip.IsValid() && n[j].ip.IsValid() {
+		return (n[i].count < n[j].count) || (n[i].count == n[j].count && n[i].ip.Less(n[j].ip))
+	}
+
+	// if we don't use the bytes we have
+	return (n[i].count < n[j].count) || (n[i].count == n[j].count && bytes.Compare(n[i].data, n[j].data) < 0)
 }
 
 func (n nodes) Swap(i, j int) {
