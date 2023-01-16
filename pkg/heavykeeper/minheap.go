@@ -82,7 +82,3 @@ func (n *nodes) Pop() interface{} {
 	val, *n = (*n)[len((*n))-1], (*n)[:len((*n))-1]
 	return val
 }
-
-func (n nodes) Key(i int) uint64 {
-	return n[i].count
-}
