@@ -46,12 +46,12 @@ func TestSmall(t *testing.T) {
 	}
 
 	want := map[string]uint64{
-		"192.0.2.6":                         8,
-		"192.0.2.3":                         5,
-		"192.0.2.4":                         4,
-		"2001:0db8:85a3:1:1:8a2e:0370:7334": 1,
-		"192.0.2.5":                         2,
-		"192.0.100.100":                     0,
+		"192.0.2.6":     8,
+		"192.0.2.3":     5,
+		"192.0.2.4":     4,
+		"192.0.2.7":     3,
+		"192.0.2.5":     2,
+		"192.0.100.100": 0,
 	}
 
 	get := topk.Get()
@@ -64,8 +64,8 @@ func TestSmall(t *testing.T) {
 		netip.MustParseAddr("192.0.2.6"),
 		netip.MustParseAddr("192.0.2.3"),
 		netip.MustParseAddr("192.0.2.4"),
+		netip.MustParseAddr("192.0.2.7"),
 		netip.MustParseAddr("192.0.2.5"),
-		netip.MustParseAddr("2001:0db8:85a3:1:1:8a2e:0370:7334"),
 	}
 
 	//fmt.Println(topk.Rank())
@@ -99,7 +99,7 @@ func TestLarge(t *testing.T) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	topk := New(5, 100, 5, 0.9, 1234567812345678)
+	topk := New(5, 100, 10, 0.9, 1234567812345678)
 
 	for k, v := range testMap {
 		for i := 0; i < v; i++ {
@@ -107,7 +107,17 @@ func TestLarge(t *testing.T) {
 		}
 	}
 
-	//fmt.Println(topk.Get())
+	wantRank := []netip.Addr{
+		netip.MustParseAddr("192.0.2.2"),
+		netip.MustParseAddr("192.0.2.34"),
+		netip.MustParseAddr("192.0.2.122"),
+		netip.MustParseAddr("192.0.2.1"),
+		netip.MustParseAddr("192.0.2.113"),
+	}
+
+	//fmt.Println(topk.Rank())
+	assert.Equal(t, wantRank, topk.Rank())
+
 }
 
 func BenchmarkAdd(b *testing.B) {

@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"net/netip"
 
-	"github.com/twotwotwo/sorts"
 	"golang.org/x/exp/slices"
 )
 
@@ -45,26 +44,18 @@ func (h *Heap) get(i int) node {
 }
 
 func (h *Heap) find(ip netip.Addr) (int, bool) {
-	slices.SortFunc(h.nodes, func(i node, j node) bool {
-		return i.ip.Less(j.ip)
-	})
-
-	return slices.BinarySearchFunc(h.nodes, node{ip: ip}, func(i node, j node) int {
-		if i.ip == j.ip {
-			return 0
+	for i := range h.nodes {
+		if h.nodes[i].ip == ip {
+			return i, true
 		}
-
-		if i.ip.Less(j.ip) {
-			return -1
-		}
-
-		return 1
-	})
+	}
+	return 0, false
 }
 
 func (h *Heap) sort() nodes {
-	sorts.ByUint64(h.nodes)
-	sorts.Flip(h.nodes)
+	slices.SortFunc(h.nodes, func(a node, b node) bool {
+		return a.count > b.count // using > to get reverse order
+	})
 	return h.nodes
 }
 
