@@ -84,7 +84,17 @@ func (topk *TopK) Add(ip netip.Addr) {
 	}
 
 	maxCount := topk.add(exists, ipSlice, ipFingerprint)
-	topk.updateHeap(exists, idx, maxCount, ip, ipSlice, ipFingerprint)
+
+	if exists {
+		topk.minHeap.fix(idx, maxCount)
+	} else {
+		topk.minHeap.add(node{
+			count:       maxCount,
+			ip:          ip,
+			slice:       ipSlice,
+			fingerprint: ipFingerprint,
+		})
+	}
 }
 
 func (topk *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
@@ -124,19 +134,6 @@ func (topk *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 	}
 
 	return maxCount
-}
-
-func (topk *TopK) updateHeap(exists bool, idx int, count uint64, ip netip.Addr, slice []byte, fingerprint uint64) {
-	if exists {
-		topk.minHeap.fix(idx, count)
-	} else {
-		topk.minHeap.add(node{
-			count:       count,
-			ip:          ip,
-			slice:       slice,
-			fingerprint: fingerprint,
-		})
-	}
 }
 
 func max(x, y uint64) uint64 {
