@@ -13,10 +13,10 @@ type Heap struct {
 	k     uint32
 }
 
-func newHeap(k uint32) *Heap {
+func newHeap(k uint32) Heap {
 	h := nodes{}
 	heap.Init(&h)
-	return &Heap{nodes: h, k: k}
+	return Heap{nodes: h, k: k}
 }
 
 func (h *Heap) add(val node) {

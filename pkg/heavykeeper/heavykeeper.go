@@ -17,7 +17,7 @@ type TopK struct {
 	decay   float64
 	seed    uint64
 	buckets []nodes
-	minHeap *Heap
+	minHeap Heap
 }
 
 type node struct {
@@ -29,7 +29,7 @@ type node struct {
 
 type nodes []node
 
-func New(k uint32, width uint64, depth uint32, decay float64, seed uint64) *TopK {
+func New(k uint32, width uint64, depth uint32, decay float64, seed uint64) TopK {
 	rand.Seed(time.Now().UnixNano())
 
 	buckets := make([]nodes, depth)
@@ -47,7 +47,7 @@ func New(k uint32, width uint64, depth uint32, decay float64, seed uint64) *TopK
 		seed:    seed,
 	}
 
-	return &topk
+	return topk
 }
 
 func (topk *TopK) Get() map[netip.Addr]uint64 {
