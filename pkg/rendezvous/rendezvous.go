@@ -53,7 +53,7 @@ func (t *Table) Key() uint64 {
 }
 
 func (t *Table) Get(ip netip.Addr) netip.Addr {
-	return t.table[hash(t.key, ip.AsSlice())&uint64(t.size-1)]
+	return t.table[t.xxhash(t.key, ip.AsSlice())&uint64(t.size-1)]
 }
 
 func (t *Table) Add(ip netip.Addr) {
@@ -88,7 +88,7 @@ func (t *Table) generateTable() {
 
 		for e, entry := range t.members {
 			// hash the entry plus the table row index
-			sum := hash(t.key, append(entrySlices[e], bI...))
+			sum := t.xxhash(t.key, append(entrySlices[e], bI...))
 			rowEntries[sum] = entry
 			rowKeys[e] = sum
 		}
@@ -100,6 +100,6 @@ func (t *Table) generateTable() {
 	t.table = table
 }
 
-func hash(key uint64, data []byte) uint64 {
+func (t *Table) xxhash(key uint64, data []byte) uint64 {
 	return xxhash.Checksum64S(data, uint64(key))
 }
