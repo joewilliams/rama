@@ -71,7 +71,6 @@ func (topk *TopK) Rank() []netip.Addr {
 func (topk *TopK) Add(ip netip.Addr) {
 	var ipSlice []byte
 	var ipFingerprint uint64
-	var maxCount uint64
 
 	idx, exists := topk.minHeap.find(ip)
 
@@ -84,23 +83,29 @@ func (topk *TopK) Add(ip netip.Addr) {
 		ipFingerprint = xxhash.Checksum64S(ipSlice, topk.seed)
 	}
 
+	maxCount := topk.add(exists, ipSlice, ipFingerprint)
+	topk.updateHeap(exists, idx, maxCount, ip, ipSlice, ipFingerprint)
+}
+
+func (topk *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 	bI := make([]byte, 4)
 	min := topk.minHeap.min()
+	var maxCount uint64
 
 	for i := uint32(0); i < topk.depth; i++ {
 		binary.LittleEndian.PutUint32(bI, i)
 
-		bucket := xxhash.Checksum64S(append(ipSlice, bI...), topk.seed) % topk.width
+		bucket := xxhash.Checksum64S(append(data, bI...), topk.seed) % topk.width
 		count := topk.buckets[i][bucket].count
 
 		if count == 0 {
-			topk.buckets[i][bucket].fingerprint = ipFingerprint
-			topk.buckets[i][bucket].count = 1
+			topk.buckets[i][bucket].fingerprint = fingerprint
+			topk.buckets[i][bucket].count++
 			maxCount = max(maxCount, 1)
 			continue
 		}
 
-		if topk.buckets[i][bucket].fingerprint == ipFingerprint {
+		if topk.buckets[i][bucket].fingerprint == fingerprint {
 			if exists || count <= min {
 				topk.buckets[i][bucket].count++
 				maxCount = max(maxCount, topk.buckets[i][bucket].count)
@@ -111,14 +116,14 @@ func (topk *TopK) Add(ip netip.Addr) {
 		if rand.Float64() < math.Pow(topk.decay, float64(count)) {
 			topk.buckets[i][bucket].count--
 			if topk.buckets[i][bucket].count == 0 {
-				topk.buckets[i][bucket].fingerprint = ipFingerprint
-				topk.buckets[i][bucket].count = 1
+				topk.buckets[i][bucket].fingerprint = fingerprint
+				topk.buckets[i][bucket].count++
 				maxCount = max(maxCount, 1)
 			}
 		}
 	}
 
-	topk.updateHeap(exists, idx, maxCount, ip, ipSlice, ipFingerprint)
+	return maxCount
 }
 
 func (topk *TopK) updateHeap(exists bool, idx int, count uint64, ip netip.Addr, slice []byte, fingerprint uint64) {
