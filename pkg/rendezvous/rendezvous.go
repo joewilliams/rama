@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/OneOfOne/xxhash"
-	"github.com/twotwotwo/sorts/sortutil"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -94,7 +94,7 @@ func (t *Table) generateTable() {
 			rowKeys[e] = sum
 		}
 
-		sortutil.Uint64Slice(rowKeys).Sort()
+		slices.Sort(rowKeys)
 		table[i] = rowEntries[rowKeys[0]]
 	}
 
