@@ -52,7 +52,6 @@ func New(k uint32, width uint64, depth uint32, decay float64, seed uint64) TopK 
 
 func (topk *TopK) Get() map[netip.Addr]uint64 {
 	output := map[netip.Addr]uint64{}
-
 	for _, entry := range topk.minHeap.nodes {
 		output[entry.ip] = entry.count
 	}
