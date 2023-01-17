@@ -43,7 +43,7 @@ func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint6
 		buckets[i] = make(nodes, width)
 	}
 
-	topk := TopK{
+	t := TopK{
 		k:       k,
 		width:   width,
 		depth:   depth,
@@ -54,31 +54,31 @@ func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint6
 		rand:    internalRand,
 	}
 
-	return topk
+	return t
 }
 
-func (topk *TopK) GetIPs() map[netip.Addr]uint64 {
+func (t *TopK) GetIPs() map[netip.Addr]uint64 {
 	output := map[netip.Addr]uint64{}
-	for _, entry := range topk.minHeap.nodes {
+	for _, entry := range t.minHeap.nodes {
 		output[entry.ip] = entry.count
 	}
 
 	return output
 }
 
-func (topk *TopK) RankIPs() []netip.Addr {
-	list := make([]netip.Addr, topk.k)
-	for i, entry := range topk.minHeap.sort() {
+func (t *TopK) RankIPs() []netip.Addr {
+	list := make([]netip.Addr, t.k)
+	for i, entry := range t.minHeap.sort() {
 		list[i] = entry.ip
 	}
 
 	return list
 }
 
-func (topk *TopK) RankBytes() ([][]byte, []uint64) {
-	listBytes := make([][]byte, topk.k)
-	listCounts := make([]uint64, topk.k)
-	for i, entry := range topk.minHeap.sort() {
+func (t *TopK) RankBytes() ([][]byte, []uint64) {
+	listBytes := make([][]byte, t.k)
+	listCounts := make([]uint64, t.k)
+	for i, entry := range t.minHeap.sort() {
 		listBytes[i] = entry.data
 		listCounts[i] = entry.count
 	}
@@ -86,27 +86,27 @@ func (topk *TopK) RankBytes() ([][]byte, []uint64) {
 	return listBytes, listCounts
 }
 
-func (topk *TopK) AddIP(ip netip.Addr) {
+func (t *TopK) AddIP(ip netip.Addr) {
 	var ipBytes []byte
 	var fingerprint uint64
 
-	idx, exists := topk.minHeap.findByIP(ip)
+	idx, exists := t.minHeap.findByIP(ip)
 
 	// if we've seen this IP before use the fingerprint and []byte we created previously
 	if exists {
-		ipBytes = topk.minHeap.get(idx).data
-		fingerprint = topk.minHeap.get(idx).fingerprint
+		ipBytes = t.minHeap.get(idx).data
+		fingerprint = t.minHeap.get(idx).fingerprint
 	} else {
 		ipBytes = ip.AsSlice()
-		fingerprint = topk.xxhash(ipBytes)
+		fingerprint = t.xxhash(ipBytes)
 	}
 
-	maxCount := topk.add(exists, ipBytes, fingerprint)
+	maxCount := t.add(exists, ipBytes, fingerprint)
 
 	if exists {
-		topk.minHeap.fix(idx, maxCount)
+		t.minHeap.fix(idx, maxCount)
 	} else {
-		topk.minHeap.add(node{
+		t.minHeap.add(node{
 			count:       maxCount,
 			ip:          ip,
 			data:        ipBytes,
@@ -115,24 +115,24 @@ func (topk *TopK) AddIP(ip netip.Addr) {
 	}
 }
 
-func (topk *TopK) AddBytes(data []byte) {
+func (t *TopK) AddBytes(data []byte) {
 	var fingerprint uint64
 
-	idx, exists := topk.minHeap.findByBytes(data)
+	idx, exists := t.minHeap.findByBytes(data)
 
 	// if we've seen this IP before use the fingerprint we created previously
 	if exists {
-		fingerprint = topk.minHeap.get(idx).fingerprint
+		fingerprint = t.minHeap.get(idx).fingerprint
 	} else {
-		fingerprint = topk.xxhash(data)
+		fingerprint = t.xxhash(data)
 	}
 
-	maxCount := topk.add(exists, data, fingerprint)
+	maxCount := t.add(exists, data, fingerprint)
 
 	if exists {
-		topk.minHeap.fix(idx, maxCount)
+		t.minHeap.fix(idx, maxCount)
 	} else {
-		topk.minHeap.add(node{
+		t.minHeap.add(node{
 			count:       maxCount,
 			data:        data,
 			fingerprint: fingerprint,
@@ -140,37 +140,37 @@ func (topk *TopK) AddBytes(data []byte) {
 	}
 }
 
-func (topk *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
+func (t *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 	bI := make([]byte, 4)
-	min := topk.minHeap.min()
+	min := t.minHeap.min()
 	var maxCount uint64
 
-	for i := uint32(0); i < topk.depth; i++ {
+	for i := uint32(0); i < t.depth; i++ {
 		binary.LittleEndian.PutUint32(bI, i)
 
-		bucket := topk.xxhash(append(data, bI...)) % topk.width
-		count := topk.buckets[i][bucket].count
+		bucket := t.xxhash(append(data, bI...)) % t.width
+		count := t.buckets[i][bucket].count
 
 		if count == 0 {
-			topk.buckets[i][bucket].fingerprint = fingerprint
-			topk.buckets[i][bucket].count++
+			t.buckets[i][bucket].fingerprint = fingerprint
+			t.buckets[i][bucket].count++
 			maxCount = max(maxCount, 1)
 			continue
 		}
 
-		if topk.buckets[i][bucket].fingerprint == fingerprint {
+		if t.buckets[i][bucket].fingerprint == fingerprint {
 			if exists || count <= min {
-				topk.buckets[i][bucket].count++
-				maxCount = max(maxCount, topk.buckets[i][bucket].count)
+				t.buckets[i][bucket].count++
+				maxCount = max(maxCount, t.buckets[i][bucket].count)
 			}
 			continue
 		}
 
-		if topk.rand.Float64() < math.Pow(topk.decay, float64(count)) {
-			topk.buckets[i][bucket].count--
-			if topk.buckets[i][bucket].count == 0 {
-				topk.buckets[i][bucket].fingerprint = fingerprint
-				topk.buckets[i][bucket].count++
+		if t.rand.Float64() < math.Pow(t.decay, float64(count)) {
+			t.buckets[i][bucket].count--
+			if t.buckets[i][bucket].count == 0 {
+				t.buckets[i][bucket].fingerprint = fingerprint
+				t.buckets[i][bucket].count++
 				maxCount = max(maxCount, 1)
 			}
 		}
@@ -179,8 +179,8 @@ func (topk *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 	return maxCount
 }
 
-func (topk *TopK) xxhash(data []byte) uint64 {
-	return xxhash.Checksum64S(data, topk.seed)
+func (t *TopK) xxhash(data []byte) uint64 {
+	return xxhash.Checksum64S(data, t.seed)
 }
 
 func max(x, y uint64) uint64 {
