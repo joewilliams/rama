@@ -50,9 +50,9 @@ decay := 0.9
 
 topk := New(k, width, depth, decay, hashKey)
 
-topk.Add(netip.MustParseAddr("192.168.1.4"))
+topk.AddIP(netip.MustParseAddr("192.168.1.4"))
 
-results := topk.Get()
+results := topk.GetIPs()
 ```
 
 Profiling and performance observations:
