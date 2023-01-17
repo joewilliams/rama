@@ -67,7 +67,6 @@ func TestSmallIP(t *testing.T) {
 	}
 
 	get := topk.GetIPs()
-	//fmt.Println(topk.Get())
 	for k, v := range want {
 		assert.Equal(t, v, get[netip.MustParseAddr(k)])
 	}
@@ -80,7 +79,6 @@ func TestSmallIP(t *testing.T) {
 		netip.MustParseAddr("192.0.2.5"),
 	}
 
-	//fmt.Println(topk.Rank())
 	assert.Equal(t, wantRank, topk.RankIPs())
 }
 
@@ -166,8 +164,8 @@ func TestLargeIPs(t *testing.T) {
 			"192.0.2.21":                        8,
 		}
 
-		// 20 width, 10 depth is pretty small but big enough to have decent error bounds
-		topk := New(5, 20, 10, 0.9)
+		// 30 width, 10 depth is pretty small but big enough to have decent error bounds
+		topk := New(5, 30, 10, 0.9)
 
 		for k, v := range testMap {
 			for i := 0; i < v; i++ {
@@ -213,8 +211,8 @@ func TestLargeBytes(t *testing.T) {
 			"192.0.2.21":                        8,
 		}
 
-		// 20 width, 10 depth is pretty small but big enough to have decent error bounds
-		topk := New(5, 20, 10, 0.9)
+		// 30 width, 10 depth is pretty small but big enough to have decent error bounds
+		topk := New(5, 30, 10, 0.9)
 
 		for k, v := range testMap {
 			for i := 0; i < v; i++ {

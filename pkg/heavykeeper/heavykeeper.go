@@ -18,6 +18,7 @@ type TopK struct {
 	seed    uint64
 	buckets []nodes
 	minHeap Heap
+	rand    *rand.Rand
 }
 
 type node struct {
@@ -35,7 +36,7 @@ func New(k uint32, width uint64, depth uint32, decay float64) TopK {
 }
 
 func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint64) TopK {
-	rand.Seed(time.Now().UnixNano())
+	internalRand := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	buckets := make([]nodes, depth)
 	for i := range buckets {
@@ -50,6 +51,7 @@ func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint6
 		buckets: buckets,
 		minHeap: newHeap(k),
 		seed:    seed,
+		rand:    internalRand,
 	}
 
 	return topk
@@ -164,7 +166,7 @@ func (topk *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 			continue
 		}
 
-		if rand.Float64() < math.Pow(topk.decay, float64(count)) {
+		if topk.rand.Float64() < math.Pow(topk.decay, float64(count)) {
 			topk.buckets[i][bucket].count--
 			if topk.buckets[i][bucket].count == 0 {
 				topk.buckets[i][bucket].fingerprint = fingerprint
