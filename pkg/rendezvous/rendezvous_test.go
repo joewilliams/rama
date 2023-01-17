@@ -237,7 +237,8 @@ func BenchmarkGenerateThreeEntries(b *testing.B) {
 	}
 
 	for n := 0; n < b.N; n++ {
-		New(1234, ips)
+		_, err := New(1234, ips)
+		assert.Nil(b, err)
 	}
 }
 
