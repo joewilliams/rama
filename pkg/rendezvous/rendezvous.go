@@ -62,9 +62,9 @@ func (t *Table) Add(ip netip.Addr) {
 
 func (t *Table) Delete(ip netip.Addr) {
 	newMembers := []netip.Addr{}
-	for _, entry := range t.members {
-		if entry != ip {
-			newMembers = append(newMembers, entry)
+	for _, member := range t.members {
+		if member != ip {
+			newMembers = append(newMembers, member)
 		}
 	}
 	t.members = newMembers
@@ -75,9 +75,9 @@ func (t *Table) generateTable() {
 	table := make([]netip.Addr, t.size)
 	bI := make([]byte, 4)
 
-	entrySlices := make([][]byte, len(t.members))
-	for e, entry := range t.members {
-		entrySlices[e] = entry.AsSlice()
+	memberBytes := make([][]byte, len(t.members))
+	for m, member := range t.members {
+		memberBytes[m] = member.AsSlice()
 	}
 
 	for i := uint32(0); i < t.size; i++ {
@@ -86,13 +86,13 @@ func (t *Table) generateTable() {
 
 		binary.LittleEndian.PutUint32(bI, i)
 
-		for e, entry := range t.members {
+		for m, member := range t.members {
 			// hash the entry plus the table row index
-			sum := t.xxhash(append(entrySlices[e], bI...))
+			sum := t.xxhash(append(memberBytes[m], bI...))
 
 			if sum > highScore {
 				highScore = sum
-				highEntry = entry
+				highEntry = member
 			}
 		}
 
