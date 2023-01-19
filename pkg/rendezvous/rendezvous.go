@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/OneOfOne/xxhash"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -74,7 +73,6 @@ func (t *Table) Delete(ip netip.Addr) {
 
 func (t *Table) generateTable() {
 	table := make([]netip.Addr, t.size)
-	rowKeys := make([]uint64, len(t.members))
 	bI := make([]byte, 4)
 
 	entrySlices := make([][]byte, len(t.members))
@@ -83,18 +81,22 @@ func (t *Table) generateTable() {
 	}
 
 	for i := uint32(0); i < t.size; i++ {
-		rowEntries := map[uint64]netip.Addr{}
+		var highScore uint64
+		var highEntry netip.Addr
+
 		binary.LittleEndian.PutUint32(bI, i)
 
 		for e, entry := range t.members {
 			// hash the entry plus the table row index
 			sum := t.xxhash(append(entrySlices[e], bI...))
-			rowEntries[sum] = entry
-			rowKeys[e] = sum
+
+			if sum > highScore {
+				highScore = sum
+				highEntry = entry
+			}
 		}
 
-		slices.Sort(rowKeys)
-		table[i] = rowEntries[rowKeys[0]]
+		table[i] = highEntry
 	}
 
 	t.table = table

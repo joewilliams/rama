@@ -31,7 +31,6 @@ table.Delete(newEntry)
 ```
 
 Profiling and performance observations:
-* The library uses [slices.Sort](https://pkg.go.dev/golang.org/x/exp/slices#Sort) which seems on par with other sorts ([radix](https://github.com/twotwotwo/sorts), [sort.Slice](https://pkg.go.dev/sort#Slice), etc) in wall clock time and has fewer memory allocations.
 * Unsurprisingly `binary.LittleEndian.PutUint32(bI, uint32(i))` seems to be a lot faster than `[]byte(fmt.Sprint())` when generating the row hash.
 * Previously this used [siphash](https://en.wikipedia.org/wiki/SipHash) but for this use case I think a seeded [xxhash](https://cyan4973.github.io/xxHash/) is equivalently safe for this use case, and is a bit faster. Hash speed is not a huge factor in this use case though. 
 

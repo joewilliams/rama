@@ -42,35 +42,18 @@ func TestNew(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 114, count0)
-	assert.Equal(t, 94, count1)
-	assert.Equal(t, 92, count2)
+	assert.Equal(t, 98, count0)
+	assert.Equal(t, 105, count1)
+	assert.Equal(t, 97, count2)
 
 	assert.Equal(t, len(table.table), count0+count1+count2)
 
 	want := map[string]string{
-		"192.0.2.1":  "192.0.2.111",
-		"192.0.2.2":  "192.0.2.112",
-		"192.0.2.3":  "192.0.2.113",
-		"192.0.2.4":  "192.0.2.111",
-		"192.0.2.5":  "192.0.2.111",
-		"192.0.2.6":  "192.0.2.111",
-		"192.0.2.7":  "192.0.2.112",
-		"192.0.2.8":  "192.0.2.112",
-		"192.0.2.9":  "192.0.2.112",
-		"192.0.2.10": "192.0.2.111",
-		"192.0.2.11": "192.0.2.112",
-		"192.0.2.12": "192.0.2.112",
-		"192.0.2.13": "192.0.2.113",
-		"192.0.2.14": "192.0.2.111",
-		"192.0.2.15": "192.0.2.111",
-		"192.0.2.16": "192.0.2.111",
-		"192.0.2.17": "192.0.2.113",
-		"192.0.2.18": "192.0.2.111",
-		"192.0.2.19": "192.0.2.112",
-		"192.0.2.20": "192.0.2.111",
-		"192.0.2.21": "192.0.2.111",
-		"192.0.2.22": "192.0.2.112",
+		"192.0.2.1": "192.0.2.112",
+		"192.0.2.2": "192.0.2.113",
+		"192.0.2.3": "192.0.2.111",
+		"192.0.2.4": "192.0.2.112",
+		"192.0.2.5": "192.0.2.112",
 	}
 
 	for k, v := range want {
@@ -143,11 +126,11 @@ func TestDelete(t *testing.T) {
 	}
 
 	assert.Equal(t, 0, count0)
-	assert.Equal(t, 110, count1)
-	assert.Equal(t, 124, count2)
-	assert.Equal(t, 122, count3)
-	assert.Equal(t, 124, count4)
-	assert.Equal(t, 120, count5)
+	assert.Equal(t, 133, count1)
+	assert.Equal(t, 104, count2)
+	assert.Equal(t, 113, count3)
+	assert.Equal(t, 121, count4)
+	assert.Equal(t, 129, count5)
 
 	for k, v := range want {
 		//fmt.Printf("%v / %v\n", k, v)
@@ -204,10 +187,10 @@ func TestAdd(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 66, count0)
-	assert.Equal(t, 78, count1)
-	assert.Equal(t, 74, count2)
-	assert.Equal(t, 82, count3)
+	assert.Equal(t, 73, count0)
+	assert.Equal(t, 80, count1)
+	assert.Equal(t, 71, count2)
+	assert.Equal(t, 76, count3)
 }
 
 func TestGetKeys(t *testing.T) {
