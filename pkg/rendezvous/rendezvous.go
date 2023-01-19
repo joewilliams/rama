@@ -61,7 +61,7 @@ func (t *Table) Add(ip netip.Addr) {
 }
 
 func (t *Table) Delete(ip netip.Addr) {
-	newMembers := []netip.Addr{}
+	var newMembers []netip.Addr
 	for _, member := range t.members {
 		if member != ip {
 			newMembers = append(newMembers, member)
