@@ -34,6 +34,14 @@ Profiling and performance observations:
 * Unsurprisingly `binary.LittleEndian.PutUint32(bI, uint32(i))` seems to be a lot faster than `[]byte(fmt.Sprint())` when generating the row hash.
 * Previously this used [siphash](https://en.wikipedia.org/wiki/SipHash) but for this use case I think a seeded [xxhash](https://cyan4973.github.io/xxHash/) is equivalently safe for this use case, and is a bit faster. Hash speed is not a huge factor in this use case though. 
 
+### Weighted Rendezvous Hash
+
+This implementation is based on the rendezvous hash described above but adds weighting to each member of the table while maintaining the "minimal disruption" property on delete. It also maintains the constant time look up by pre-generating the table on modification. `New` and `NewWithTableSize` now require a map of addresses and weights, as does `Add`. `Delete` and `Get` work the same.
+
+Profiling and performance observations:
+* This implementation should perform nearly identically as the above. The only change is some extra math to deal with the weights. 
+* Converting a uint64 to a uniformly random float64 in golang is a trick https://github.com/golang/go/issues/12290
+
 ### HeavyKeeper
 
 [HeavyKeeper](https://www.usenix.org/system/files/conference/atc18/atc18-gong.pdf) is a probabilistic data structure for maintaining a top-k dataset. It improves upon previous top-k implementations in speed and accuracy by using something called *count-with-exponential-decay*, which basically means entries in the dataset are heavily biased towards high frequency i.e. entries we rarely see are quicky replaced by entries we see very often. Multiple hash tables ("buckets") are used to improve accuracy by storing counts multiple times and picking the largest. The data structure is tunable in terms of the size of `k` as well as performance, memory usage and accuracy which are determined by `width`, `depth` and `decay`. Higher values for each tend to use more cpu and memory but will be more accurate. For instance higher values for `width` and `depth` will mean there is a better chance the "correct" count is stored somewhere for a given entry but results in larger hash tables and more iterations through those tables. `decay` controls how much bias there is, higher values will mean rare entries are removed more quickly. `New` and `NewWithSeed` create a new instance, `AddIP` and `AddBytes` adds an entry to the data structure, `GetIPs` returns a map of the current top-k IPs and their counts and `RankIPs` and `RankBytes` returns a sorted array(s) of the top-k entries.
