@@ -156,7 +156,7 @@ func TestAdd(t *testing.T) {
 	table, err := New(1234567812345678, ips)
 	assert.Nil(t, err)
 
-	// adding 192.0.2.4 should affect everything
+	// adding should affect everything
 	newMember := netip.MustParseAddr("2001:0db8:85a3:1:1:8a2e:0370:7334")
 	table.Add(newMember)
 

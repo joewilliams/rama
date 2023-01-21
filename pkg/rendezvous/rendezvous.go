@@ -15,25 +15,35 @@ const (
 	multiple = 100
 )
 
+type member struct {
+	addr  netip.Addr
+	bytes []byte
+}
+
 type Table struct {
-	members []netip.Addr
+	members []member
 	table   []netip.Addr
 	size    uint32
 	key     uint64
 }
 
-func New(key uint64, members []netip.Addr) (Table, error) {
-	return NewWithTableSize(key, uint32(len(members)*int(multiple)), members)
+func New(key uint64, membersList []netip.Addr) (Table, error) {
+	return NewWithTableSize(key, uint32(len(membersList)*int(multiple)), membersList)
 }
 
-func NewWithTableSize(key uint64, size uint32, members []netip.Addr) (Table, error) {
-	if len(members) < 1 {
-		return Table{}, fmt.Errorf("too few members: %v", len(members))
+func NewWithTableSize(key uint64, size uint32, membersList []netip.Addr) (Table, error) {
+	if len(membersList) < 1 {
+		return Table{}, fmt.Errorf("too few members: %v", len(membersList))
 	}
 
 	if key == 0 {
 		rand.Seed(time.Now().UnixNano())
 		key = rand.Uint64()
+	}
+
+	var members []member
+	for _, m := range membersList {
+		members = append(members, member{addr: m, bytes: m.AsSlice()})
 	}
 
 	table := Table{
@@ -51,19 +61,19 @@ func (t *Table) Key() uint64 {
 	return t.key
 }
 
-func (t *Table) Get(ip netip.Addr) netip.Addr {
-	return t.table[t.xxhash(ip.AsSlice())&uint64(t.size-1)]
+func (t *Table) Get(addr netip.Addr) netip.Addr {
+	return t.table[t.xxhash(addr.AsSlice())&uint64(t.size-1)]
 }
 
-func (t *Table) Add(ip netip.Addr) {
-	t.members = append(t.members, ip)
+func (t *Table) Add(addr netip.Addr) {
+	t.members = append(t.members, member{addr: addr, bytes: addr.AsSlice()})
 	t.generateTable()
 }
 
-func (t *Table) Delete(ip netip.Addr) {
-	var newMembers []netip.Addr
+func (t *Table) Delete(addr netip.Addr) {
+	var newMembers []member
 	for _, member := range t.members {
-		if member != ip {
+		if member.addr != addr {
 			newMembers = append(newMembers, member)
 		}
 	}
@@ -75,28 +85,23 @@ func (t *Table) generateTable() {
 	table := make([]netip.Addr, t.size)
 	bI := make([]byte, 4)
 
-	memberBytes := make([][]byte, len(t.members))
-	for m, member := range t.members {
-		memberBytes[m] = member.AsSlice()
-	}
-
 	for i := uint32(0); i < t.size; i++ {
 		var highScore uint64
-		var highEntry netip.Addr
+		var highMember netip.Addr
 
 		binary.LittleEndian.PutUint32(bI, i)
 
-		for m, member := range t.members {
+		for _, member := range t.members {
 			// hash the entry plus the table row index
-			sum := t.xxhash(append(memberBytes[m], bI...))
+			sum := t.xxhash(append(member.bytes, bI...))
 
 			if sum > highScore {
 				highScore = sum
-				highEntry = member
+				highMember = member.addr
 			}
 		}
 
-		table[i] = highEntry
+		table[i] = highMember
 	}
 
 	t.table = table
