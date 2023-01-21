@@ -165,16 +165,38 @@ func TestBadNew(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func BenchmarkGenerateThreeEntries(b *testing.B) {
-	ips := map[netip.Addr]float64{
-		netip.MustParseAddr("192.0.2.1"): 1,
-		netip.MustParseAddr("192.0.2.2"): 2,
-		netip.MustParseAddr("192.0.2.3"): 1,
+func BenchmarkGenerateOneEntry(b *testing.B) {
+	ips := map[netip.Addr]float64{netip.MustParseAddr("192.0.2.1"): 10}
+
+	for n := 0; n < b.N; n++ {
+		_, err := New(1234, ips)
+		assert.Nil(b, err)
+	}
+}
+
+func BenchmarkGenerateTenEntries(b *testing.B) {
+	ips := map[netip.Addr]float64{}
+	for i := 0; i < 10; i++ {
+		ips[netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", i))] = 10
 	}
 
 	for n := 0; n < b.N; n++ {
 		_, err := New(1234, ips)
 		assert.Nil(b, err)
+	}
+}
+
+func BenchmarkGenerate1kEntries(b *testing.B) {
+	ips := map[netip.Addr]float64{}
+	for i := 0; i < 250; i++ {
+		ips[netip.MustParseAddr(fmt.Sprintf("192.0.1.%v", i))] = 10
+		ips[netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", i))] = 10
+		ips[netip.MustParseAddr(fmt.Sprintf("192.0.3.%v", i))] = 10
+		ips[netip.MustParseAddr(fmt.Sprintf("192.0.4.%v", i))] = 10
+	}
+
+	for n := 0; n < b.N; n++ {
+		New(1234, ips)
 	}
 }
 
