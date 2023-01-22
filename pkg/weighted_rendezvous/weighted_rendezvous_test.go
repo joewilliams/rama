@@ -144,6 +144,55 @@ func TestNew(t *testing.T) {
 
 	// it should always equal 1
 	assert.Equal(t, totalAdd, float64(1))
+
+	table.Set(netip.MustParseAddr("192.0.2.112"), 40)
+
+	countsSet := map[netip.Addr]float64{
+		newMember:                          0,
+		netip.MustParseAddr("192.0.2.112"): 0,
+		netip.MustParseAddr("192.0.2.113"): 0,
+	}
+
+	for i := 0; i <= 255; i++ {
+		for j := 0; j <= 255; j++ {
+			lookup := netip.MustParseAddr(fmt.Sprintf("192.0.%v.%v", i, j))
+			ip := table.Get(lookup)
+
+			for k := range countsSet {
+				if k == ip {
+					countsSet[k]++
+				}
+			}
+		}
+	}
+
+	totalSet := float64(0)
+
+	for k, v := range countsSet {
+		percent := float64(v) / float64(65536)
+		totalSet = totalSet + percent
+
+		//fmt.Printf("%v : %v : %v\n", k, v, percent)
+
+		// make sure the distribution is within +/- a few percent
+		if k == newMember {
+			assert.GreaterOrEqual(t, percent, 0.15)
+			assert.LessOrEqual(t, percent, 0.35)
+		}
+
+		if k == netip.MustParseAddr("192.0.2.112") {
+			assert.GreaterOrEqual(t, percent, 0.10)
+			assert.LessOrEqual(t, percent, 0.20)
+		}
+
+		if k == netip.MustParseAddr("192.0.2.113") {
+			assert.GreaterOrEqual(t, percent, 0.60)
+			assert.LessOrEqual(t, percent, 0.80)
+		}
+	}
+
+	// it should always equal 1
+	assert.Equal(t, totalAdd, float64(1))
 }
 
 func TestGetKeys(t *testing.T) {

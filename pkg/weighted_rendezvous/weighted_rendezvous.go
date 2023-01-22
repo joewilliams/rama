@@ -83,6 +83,17 @@ func (t *Table) Delete(addr netip.Addr) {
 	t.generateTable()
 }
 
+func (t *Table) Set(addr netip.Addr, weight float64) {
+	for m, member := range t.members {
+		if member.addr == addr {
+			t.members[m].weight = weight
+			break
+		}
+	}
+
+	t.generateTable()
+}
+
 func (t *Table) generateTable() {
 	bI := make([]byte, 4)
 	table := make([]netip.Addr, t.size)

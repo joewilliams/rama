@@ -36,7 +36,7 @@ Profiling and performance observations:
 
 ### Weighted Rendezvous Hash
 
-This implementation is based on the rendezvous hash described above but adds weighting to each member of the table while maintaining the "minimal disruption" property on delete. The weighting implementation is described in this [presentation](https://www.snia.org/sites/default/files/SDC15_presentations/dist_sys/Jason_Resch_New_Consistent_Hashings_Rev.pdf). It maintains the constant time look up by pre-generating the table on modification. `New` and `NewWithTableSize` now require a map of addresses and weights, as does `Add`. `Delete` and `Get` work the same.
+This implementation is based on the rendezvous hash described above but adds weighting to each member of the table while maintaining the "minimal disruption" property on delete. The weighting implementation is described in this [presentation](https://www.snia.org/sites/default/files/SDC15_presentations/dist_sys/Jason_Resch_New_Consistent_Hashings_Rev.pdf). It maintains the constant time look up by pre-generating the table on modification. `New` and `NewWithTableSize` now require a map of addresses and weights, as does `Add`. `Delete` and `Get` work the same. It has an additional `Set` call that allows for adjusting an existing members weight and regenerating the table.
 
 ```
 ips := map[netip.Addr]float64{
