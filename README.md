@@ -51,6 +51,7 @@ table, err := New(1234567812345678, ips)
 Profiling and performance observations:
 * This implementation should perform nearly identically as the above. The only change is some extra math to deal with the weights. 
 * Converting a uint64 to a uniformly random float64 in golang is a trick https://github.com/golang/go/issues/12290
+* Scoring each member of the table is mostly bound to how fast `math.Log` returns, this the primary reason `generateTable` is slower in the weighted version of rendezvous.
 
 ### HeavyKeeper
 
