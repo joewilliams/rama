@@ -31,12 +31,15 @@ type node struct {
 type nodes []node
 
 func New(k uint32, width uint64, depth uint32, decay float64) TopK {
-	rand.Seed(time.Now().UnixNano())
-	return NewWtihSeed(k, width, depth, decay, rand.Uint64())
+	return NewWtihSeed(k, width, depth, decay, 0)
 }
 
 func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint64) TopK {
 	internalRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	if seed == 0 {
+		seed = internalRand.Uint64()
+	}
 
 	buckets := make([]nodes, depth)
 	for i := range buckets {

@@ -39,8 +39,8 @@ func NewWithTableSize(key uint64, size uint32, membersMap map[netip.Addr]float64
 	}
 
 	if key == 0 {
-		rand.Seed(time.Now().UnixNano())
-		key = rand.Uint64()
+		internalRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+		key = internalRand.Uint64()
 	}
 
 	var members []member

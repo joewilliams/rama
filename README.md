@@ -50,7 +50,7 @@ table, err := New(1234567812345678, ips)
 
 Profiling and performance observations:
 * This implementation should perform nearly identically as the above. The only change is some extra math to deal with the weights. 
-* Converting a uint64 to a uniformly random float64 in golang is a trick https://github.com/golang/go/issues/12290
+* Converting a uint64 to a uniformly random float64 in golang is a trick https://github.com/golang/go/issues/12290 The implementation I used is from [here](http://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/emt64.html).
 * Scoring each member of the table is mostly bound to how fast `math.Log` returns, this the primary reason `generateTable` is slower in the weighted version of rendezvous.
 * I tried a number of things to make combining two `[]byte` together faster during table generation but didn't find anything better than `append`. Using `bytes.NewBuffer` and `bytes.Write` didn't help, nor did looping and `copy`, `bytes.Join` seemed about the same.
 
