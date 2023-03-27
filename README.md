@@ -79,3 +79,8 @@ Profiling and performance observations:
 * To get more out of that linear search I store the IP address as bytes and it's fingerprint in each node in the heap. This means if an entry is in the current top-k we won't have to `ip.AsSlice()` nor `xxhash.Checksum64S` when we add it. This reduces allocations quite a bit. IPs we see often have better performance than ones we see rarely.
 * Under the covers `Rank()` uses [`slices.SortFunc`](https://pkg.go.dev/golang.org/x/exp/slices#SortFunc).
 * `RankBytes` returns two sorted arrays rather than a map with `string([]byte)` keys.
+
+
+#### To Do
+* Enhancing Peak Network Traffic Prediction via Time-Series Decomposition https://arxiv.org/pdf/2303.13529.pdf
+* WDHT http://archive.cone.informatik.uni-freiburg.de/pubs/WDHT.pdf (not available over HTTPS)
