@@ -41,7 +41,7 @@ func NewWithTableSize(key uint64, size uint32, membersList []netip.Addr) (Table,
 		key = internalRand.Uint64()
 	}
 
-	var members []member
+	members := make([]member, 0, len(membersList))
 	for _, m := range membersList {
 		members = append(members, member{addr: m, bytes: m.AsSlice()})
 	}
@@ -71,7 +71,7 @@ func (t *Table) Add(addr netip.Addr) {
 }
 
 func (t *Table) Delete(addr netip.Addr) {
-	var newMembers []member
+	newMembers := make([]member, 0, len(t.members))
 	for _, member := range t.members {
 		if member.addr != addr {
 			newMembers = append(newMembers, member)
