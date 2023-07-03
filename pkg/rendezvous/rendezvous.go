@@ -84,6 +84,7 @@ func (t *Table) Delete(addr netip.Addr) {
 func (t *Table) generateTable() {
 	table := make([]netip.Addr, t.size)
 	bI := make([]byte, 4)
+	data := make([]byte, 0, 20) // 16+4 enough for v6 addr + bI
 
 	for i := uint32(0); i < t.size; i++ {
 		var highScore uint64
@@ -93,7 +94,10 @@ func (t *Table) generateTable() {
 
 		for _, member := range t.members {
 			// hash the entry plus the table row index
-			sum := t.xxhash(append(member.bytes, bI...))
+			data = append(data, member.bytes...)
+			data = append(data, bI...)
+			sum := t.xxhash(data)
+			data = data[:0] // clear it out before we use it again
 
 			if sum > highScore {
 				highScore = sum
