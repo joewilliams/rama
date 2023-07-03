@@ -147,11 +147,15 @@ func (t *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 	bI := make([]byte, 4)
 	min := t.minHeap.min()
 	var maxCount uint64
+	dataX := make([]byte, 0, 20) // 16+4 enough for v6 addr + bI
 
 	for i := uint32(0); i < t.depth; i++ {
 		binary.LittleEndian.PutUint32(bI, i)
 
-		bucket := t.xxhash(append(data, bI...)) % t.width
+		dataX = append(dataX, data...)
+		dataX = append(dataX, bI...)
+		bucket := t.xxhash(dataX) % t.width
+		dataX = dataX[:0]
 		count := t.buckets[i][bucket].count
 
 		if count == 0 {
