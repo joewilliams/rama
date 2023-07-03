@@ -155,7 +155,7 @@ func (t *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 		dataX = append(dataX, data...)
 		dataX = append(dataX, bI...)
 		bucket := t.xxhash(dataX) % t.width
-		dataX = dataX[:0]
+		dataX = dataX[:0] // clear it out before we use it again
 		count := t.buckets[i][bucket].count
 
 		if count == 0 {
