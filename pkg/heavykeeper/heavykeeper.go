@@ -22,7 +22,7 @@ type TopK struct {
 }
 
 type node struct {
-	ip          netip.Addr
+	addr        netip.Addr
 	count       uint64
 	fingerprint uint64
 	data        []byte
@@ -60,22 +60,34 @@ func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint6
 	return t
 }
 
-func (t *TopK) GetIPs() map[netip.Addr]uint64 {
+func (t *TopK) GetAddrs() map[netip.Addr]uint64 {
 	output := map[netip.Addr]uint64{}
 	for _, entry := range t.minHeap.nodes {
-		output[entry.ip] = entry.count
+		output[entry.addr] = entry.count
 	}
 
 	return output
 }
 
-func (t *TopK) RankIPs() []netip.Addr {
-	list := make([]netip.Addr, t.k)
-	for i, entry := range t.minHeap.sort() {
-		list[i] = entry.ip
+func (t *TopK) GetBytes() map[string]uint64 {
+	// we can't have nice things so use strings as keys
+	output := map[string]uint64{}
+	for _, entry := range t.minHeap.nodes {
+		output[string(entry.data)] = entry.count
 	}
 
-	return list
+	return output
+}
+
+func (t *TopK) RankAddrs() ([]netip.Addr, []uint64) {
+	listAddrs := make([]netip.Addr, t.k)
+	listCounts := make([]uint64, t.k)
+	for i, entry := range t.minHeap.sort() {
+		listAddrs[i] = entry.addr
+		listCounts[i] = entry.count
+	}
+
+	return listAddrs, listCounts
 }
 
 func (t *TopK) RankBytes() ([][]byte, []uint64) {
@@ -89,30 +101,30 @@ func (t *TopK) RankBytes() ([][]byte, []uint64) {
 	return listBytes, listCounts
 }
 
-func (t *TopK) AddIP(ip netip.Addr) {
-	var ipBytes []byte
+func (t *TopK) AddAddr(addr netip.Addr) {
+	var addrBytes []byte
 	var fingerprint uint64
 
-	idx, exists := t.minHeap.findByIP(ip)
+	idx, exists := t.minHeap.findByAddr(addr)
 
 	// if we've seen this IP before use the fingerprint and []byte we created previously
 	if exists {
-		ipBytes = t.minHeap.get(idx).data
+		addrBytes = t.minHeap.get(idx).data
 		fingerprint = t.minHeap.get(idx).fingerprint
 	} else {
-		ipBytes = ip.AsSlice()
-		fingerprint = t.xxhash(ipBytes)
+		addrBytes = addr.AsSlice()
+		fingerprint = t.xxhash(addrBytes)
 	}
 
-	maxCount := t.add(exists, ipBytes, fingerprint)
+	maxCount := t.add(exists, addrBytes, fingerprint)
 
 	if exists {
 		t.minHeap.fix(idx, maxCount)
 	} else {
 		t.minHeap.add(node{
 			count:       maxCount,
-			ip:          ip,
-			data:        ipBytes,
+			addr:        addr,
+			data:        addrBytes,
 			fingerprint: fingerprint,
 		})
 	}

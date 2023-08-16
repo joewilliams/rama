@@ -44,9 +44,9 @@ func (h *Heap) get(i int) node {
 	return h.nodes[i]
 }
 
-func (h *Heap) findByIP(ip netip.Addr) (int, bool) {
+func (h *Heap) findByAddr(addr netip.Addr) (int, bool) {
 	for i := range h.nodes {
-		if h.nodes[i].ip == ip {
+		if h.nodes[i].addr == addr {
 			return i, true
 		}
 	}
@@ -77,8 +77,8 @@ func (n nodes) Len() int {
 
 func (n nodes) Less(i, j int) bool {
 	// if we have IPs use those
-	if n[i].ip.IsValid() && n[j].ip.IsValid() {
-		return (n[i].count < n[j].count) || (n[i].count == n[j].count && n[i].ip.Less(n[j].ip))
+	if n[i].addr.IsValid() && n[j].addr.IsValid() {
+		return (n[i].count < n[j].count) || (n[i].count == n[j].count && n[i].addr.Less(n[j].addr))
 	}
 
 	// if we don't use the bytes we have
