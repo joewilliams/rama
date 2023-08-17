@@ -116,7 +116,7 @@ func (t *TopK) AddAddr(addr netip.Addr) {
 		fingerprint = t.xxhash(addrBytes)
 	}
 
-	maxCount := t.add(exists, addrBytes, fingerprint)
+	maxCount := t.addWithCount(1, exists, addrBytes, fingerprint)
 
 	if exists {
 		t.minHeap.fix(idx, maxCount)
@@ -142,7 +142,7 @@ func (t *TopK) AddBytes(data []byte) {
 		fingerprint = t.xxhash(data)
 	}
 
-	maxCount := t.add(exists, data, fingerprint)
+	maxCount := t.addWithCount(1, exists, data, fingerprint)
 
 	if exists {
 		t.minHeap.fix(idx, maxCount)
@@ -155,7 +155,7 @@ func (t *TopK) AddBytes(data []byte) {
 	}
 }
 
-func (t *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
+func (t *TopK) addWithCount(add uint64, exists bool, data []byte, fingerprint uint64) uint64 {
 	bI := make([]byte, 4)
 	min := t.minHeap.min()
 	var maxCount uint64
@@ -168,29 +168,28 @@ func (t *TopK) add(exists bool, data []byte, fingerprint uint64) uint64 {
 		dataX = append(dataX, bI...)
 		bucket := t.xxhash(dataX) % t.width
 		dataX = dataX[:0] // clear it out before we use it again
-		count := t.buckets[i][bucket].count
 
-		if count == 0 {
+		if t.buckets[i][bucket].count == 0 {
 			t.buckets[i][bucket].fingerprint = fingerprint
-			t.buckets[i][bucket].count++
-			maxCount = max(maxCount, 1)
+			t.buckets[i][bucket].count = t.buckets[i][bucket].count + add
+			maxCount = max(maxCount, add)
 			continue
 		}
 
 		if t.buckets[i][bucket].fingerprint == fingerprint {
-			if exists || count <= min {
-				t.buckets[i][bucket].count++
+			if exists || t.buckets[i][bucket].count <= min {
+				t.buckets[i][bucket].count = t.buckets[i][bucket].count + add
 				maxCount = max(maxCount, t.buckets[i][bucket].count)
 			}
 			continue
 		}
 
-		if t.rand.Float64() < math.Pow(t.decay, float64(count)) {
-			t.buckets[i][bucket].count--
+		if t.rand.Float64() < math.Pow(t.decay, float64(t.buckets[i][bucket].count)) {
+			t.buckets[i][bucket].count = t.buckets[i][bucket].count - add
 			if t.buckets[i][bucket].count == 0 {
 				t.buckets[i][bucket].fingerprint = fingerprint
-				t.buckets[i][bucket].count++
-				maxCount = max(maxCount, 1)
+				t.buckets[i][bucket].count = t.buckets[i][bucket].count + add
+				maxCount = max(maxCount, add)
 			}
 		}
 	}
