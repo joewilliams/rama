@@ -1,11 +1,11 @@
 module github.com/joewilliams/rama
 
-go 1.18
+go 1.22
 
 require (
 	github.com/OneOfOne/xxhash v1.2.8
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/exp v0.0.0-20230113213754-f9f960f08ad4
+	golang.org/x/exp v0.0.0-20240530194437-404ba88c7ed0
 )
 
 require (

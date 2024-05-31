@@ -63,8 +63,15 @@ func (h *Heap) findByBytes(data []byte) (int, bool) {
 }
 
 func (h *Heap) sort() nodes {
-	slices.SortFunc(h.nodes, func(a node, b node) bool {
-		return a.count > b.count // using > to get reverse order
+	slices.SortFunc(h.nodes, func(a node, b node) int {
+		switch a.count > b.count { // using > to get reverse order
+		case true:
+			return -1
+		case false:
+			return 1
+		default:
+			return 0
+		}
 	})
 	return h.nodes
 }

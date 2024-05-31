@@ -2,10 +2,9 @@ package heavykeeper
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"net/netip"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,8 +21,6 @@ const (
 )
 
 func TestSmallIP(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	ips := []netip.Addr{
 		netip.MustParseAddr("192.0.2.6"),
 		netip.MustParseAddr("2001:0db8:85a3:1:1:8a2e:0370:7334"),
@@ -87,8 +84,6 @@ func TestSmallIP(t *testing.T) {
 }
 
 func TestSmallBytes(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	ips := []netip.Addr{
 		netip.MustParseAddr("192.0.2.6"),
 		netip.MustParseAddr("2001:0db8:85a3:1:1:8a2e:0370:7334"),
@@ -157,8 +152,6 @@ func TestSmallBytes(t *testing.T) {
 }
 
 func TestLargeIPs(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	// this test runs multiple times to attempt to trigger nondeterministic bugs
 	for i := 0; i < 500; i++ {
 		testMap := map[string]int{
@@ -204,8 +197,6 @@ func TestLargeIPs(t *testing.T) {
 }
 
 func TestLargeBytes(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	// this test runs multiple times to attempt to trigger nondeterministic bugs
 	for i := 0; i < 500; i++ {
 		testMap := map[string]int{
@@ -254,10 +245,8 @@ func TestLargeBytes(t *testing.T) {
 }
 
 func BenchmarkAddIP(b *testing.B) {
-	rand.Seed(time.Now().UnixNano())
-
 	topk := New(5, 100, 100, 0.99)
-	addr := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.Intn(255-0)+0))
+	addr := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.IntN(255-0)+0))
 
 	for n := 0; n < b.N; n++ {
 		topk.AddAddr(addr)
@@ -265,22 +254,18 @@ func BenchmarkAddIP(b *testing.B) {
 }
 
 func BenchmarkRank(b *testing.B) {
-	rand.Seed(time.Now().UnixNano())
-
 	topk := New(100, 100, 100, 0.99)
 
 	for n := 0; n < b.N; n++ {
-		addr := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.Intn(255-0)+0))
+		addr := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.IntN(255-0)+0))
 		topk.AddAddr(addr)
 		topk.RankAddrs()
 	}
 }
 
 func BenchmarkAddBytes(b *testing.B) {
-	rand.Seed(time.Now().UnixNano())
-
 	topk := New(5, 100, 100, 0.99)
-	addr := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.Intn(255-0)+0))
+	addr := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.IntN(255-0)+0))
 
 	for n := 0; n < b.N; n++ {
 		topk.AddBytes(addr.AsSlice())
@@ -288,12 +273,10 @@ func BenchmarkAddBytes(b *testing.B) {
 }
 
 func BenchmarkBytes(b *testing.B) {
-	rand.Seed(time.Now().UnixNano())
-
 	topk := New(100, 100, 100, 0.99)
 
 	for n := 0; n < b.N; n++ {
-		ip := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.Intn(255-0)+0))
+		ip := netip.MustParseAddr(fmt.Sprintf("192.0.2.%v", rand.IntN(255-0)+0))
 		topk.AddBytes(ip.AsSlice())
 		topk.RankBytes()
 	}

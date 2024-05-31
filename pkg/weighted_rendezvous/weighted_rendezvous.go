@@ -4,9 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"net/netip"
-	"time"
 
 	"github.com/OneOfOne/xxhash"
 )
@@ -39,8 +38,7 @@ func NewWithTableSize(key uint64, size uint32, membersMap map[netip.Addr]float64
 	}
 
 	if key == 0 {
-		internalRand := rand.New(rand.NewSource(time.Now().UnixNano()))
-		key = internalRand.Uint64()
+		key = rand.Uint64()
 	}
 
 	members := make([]member, 0, len(membersMap))

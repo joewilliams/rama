@@ -3,9 +3,8 @@ package heavykeeper
 import (
 	"encoding/binary"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"net/netip"
-	"time"
 
 	"github.com/OneOfOne/xxhash"
 )
@@ -18,7 +17,6 @@ type TopK struct {
 	seed    uint64
 	buckets []nodes
 	minHeap Heap
-	rand    *rand.Rand
 }
 
 type node struct {
@@ -35,10 +33,8 @@ func New(k uint32, width uint64, depth uint32, decay float64) TopK {
 }
 
 func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint64) TopK {
-	internalRand := rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	if seed == 0 {
-		seed = internalRand.Uint64()
+		seed = rand.Uint64()
 	}
 
 	buckets := make([]nodes, depth)
@@ -54,7 +50,6 @@ func NewWtihSeed(k uint32, width uint64, depth uint32, decay float64, seed uint6
 		buckets: buckets,
 		minHeap: newHeap(k),
 		seed:    seed,
-		rand:    internalRand,
 	}
 
 	return t
@@ -184,7 +179,7 @@ func (t *TopK) addWithCount(add uint64, exists bool, data []byte, fingerprint ui
 			continue
 		}
 
-		if t.rand.Float64() < math.Pow(t.decay, float64(t.buckets[i][bucket].count)) {
+		if rand.Float64() < math.Pow(t.decay, float64(t.buckets[i][bucket].count)) {
 			t.buckets[i][bucket].count = t.buckets[i][bucket].count - add
 			if t.buckets[i][bucket].count == 0 {
 				t.buckets[i][bucket].fingerprint = fingerprint
