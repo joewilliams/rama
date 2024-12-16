@@ -84,3 +84,4 @@ Profiling and performance observations:
 #### To Do
 * Enhancing Peak Network Traffic Prediction via Time-Series Decomposition https://arxiv.org/pdf/2303.13529.pdf
 * WDHT http://archive.cone.informatik.uni-freiburg.de/pubs/WDHT.pdf (not available over HTTPS)
+* SIEVE: an Efficient Turn-Key Eviction Algorithm for Web Caches https://cachemon.github.io/SIEVE-website/blog/2023/12/17/sieve-is-simpler-than-lru
