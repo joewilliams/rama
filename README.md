@@ -90,3 +90,4 @@ Profiling and performance observations:
   * https://arxiv.org/abs/2203.03456
   * https://arxiv.org/abs/2304.05279
   * https://arxiv.org/abs/2502.11999
+* Port to golang https://github.com/orlp/foldhash
