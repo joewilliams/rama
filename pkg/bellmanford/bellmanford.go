@@ -7,9 +7,9 @@ import (
 )
 
 type Edge struct {
-	from   string
-	to     string
-	weight int64
+	src    string
+	dst    string
+	weight float64
 }
 
 type Graph struct {
@@ -24,22 +24,32 @@ func NewGraph() *Graph {
 	}
 }
 
-func (g *Graph) AddOrUpdateEdge(from string, to string, weight int64) {
-	g.edges = slices.DeleteFunc(g.edges, func(e Edge) bool {
-		return e.from == from && e.to == to && e.weight != weight
-	})
+func (g *Graph) AddOrUpdateEdge(src string, dst string, weight float64) {
+	for i, e := range g.edges {
+		// update existing edge
+		if e.src == src && e.dst == dst && e.weight != weight {
+			slices.Replace(g.edges, i, i, Edge{src, dst, weight})
+			return
+		}
 
-	g.edges = append(g.edges, Edge{from, to, weight})
-
-	vertices := make([]string, 0, len(g.edges)*2)
-
-	for _, e := range g.edges {
-		vertices = append(vertices, e.from)
-		vertices = append(vertices, e.to)
+		// duplicate, quit now
+		if e.src == src && e.dst == dst && e.weight == weight {
+			return
+		}
 	}
 
-	slices.Sort(vertices)
-	g.vertices = slices.Compact(vertices)
+	// new edge, add it and update the vertices
+	g.edges = append(g.edges, Edge{src, dst, weight})
+
+	// if the src or dst is a new node update the vertices
+	if !slices.Contains(g.vertices, src) {
+		g.vertices = append(g.vertices, src)
+	}
+
+	if !slices.Contains(g.vertices, dst) {
+		g.vertices = append(g.vertices, dst)
+	}
+
 }
 
 func (g *Graph) BellmanFord(src string, dst string) ([]string, error) {
@@ -47,11 +57,11 @@ func (g *Graph) BellmanFord(src string, dst string) ([]string, error) {
 		return nil, fmt.Errorf("invalid source vertex: %v", src)
 	}
 
-	dist := make(map[string]int64, len(g.vertices))
+	dist := make(map[string]float64, len(g.vertices))
 	pred := make(map[string]string, len(g.vertices))
 
 	for _, vert := range g.vertices {
-		dist[vert] = int64(math.Inf(1))
+		dist[vert] = math.Inf(1)
 		pred[vert] = ""
 	}
 
@@ -61,10 +71,10 @@ func (g *Graph) BellmanFord(src string, dst string) ([]string, error) {
 		changed := false
 
 		for _, e := range g.edges {
-			if dist[e.from] != int64(math.Inf(1)) {
-				if dist[e.from]+e.weight < dist[e.to] {
-					dist[e.to] = dist[e.from] + e.weight
-					pred[e.to] = e.from
+			if dist[e.src] != math.Inf(1) {
+				if dist[e.src]+e.weight < dist[e.dst] {
+					dist[e.dst] = dist[e.src] + e.weight
+					pred[e.dst] = e.src
 					changed = true
 				}
 			}
@@ -76,8 +86,8 @@ func (g *Graph) BellmanFord(src string, dst string) ([]string, error) {
 	}
 
 	for _, e := range g.edges {
-		if dist[e.from] != int64(math.Inf(1)) {
-			if dist[e.from]+e.weight < dist[e.to] {
+		if dist[e.src] != math.Inf(1) {
+			if dist[e.src]+e.weight < dist[e.dst] {
 				return nil, fmt.Errorf("negative cycle detected")
 			}
 		}
