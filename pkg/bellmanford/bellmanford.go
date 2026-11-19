@@ -29,7 +29,7 @@ func (g *Graph) AddOrUpdateEdge(src string, dst string, weight float64) {
 	for i, e := range g.edges {
 		// update existing edge
 		if e.src == src && e.dst == dst && e.weight != weight {
-			slices.Replace(g.edges, i, i, Edge{src, dst, weight})
+			g.edges = slices.Replace(g.edges, i, i, Edge{src, dst, weight})
 			return
 		}
 
