@@ -54,6 +54,7 @@ func BenchmarkAll(b *testing.B) {
 		g.AddOrUpdateEdge("b", "e", 3)
 		g.AddOrUpdateEdge("b", "e", 3)
 		g.AddOrUpdateEdge("b", "e", 3)
-		g.BellmanFord("a", "e")
+		_, err := g.BellmanFord("a", "e")
+		assert.NoError(b, err)
 	}
 }
