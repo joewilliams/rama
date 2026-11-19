@@ -80,6 +80,24 @@ Profiling and performance observations:
 * Under the covers `Rank()` uses [`slices.SortFunc`](https://pkg.go.dev/golang.org/x/exp/slices#SortFunc).
 * `RankBytes` returns two sorted arrays rather than a map with `string([]byte)` keys.
 
+### Bellman-Ford
+[Bellman-Ford](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm) is a shortest path algorithm similar to Dijksta's but can handle negative weights. The API is pretty straight forward, build a graph with weights and run Bellman-Ford on the graph to determine the shortest path between two nodes.
+
+```
+	g := NewGraph()
+	g.AddOrUpdateEdge("a", "b", -1)
+	g.AddOrUpdateEdge("b", "c", 2)
+	g.AddOrUpdateEdge("c", "d", 4)
+	g.AddOrUpdateEdge("d", "e", -1)
+	g.AddOrUpdateEdge("a", "c", 1)
+	g.AddOrUpdateEdge("b", "d", 2)
+	g.AddOrUpdateEdge("c", "e", -1)
+	path, err := g.BellmanFord("a", "e")
+```
+
+Profiling and performance observations:
+* I deliberately tried to be "smart" in `AddOrUpdateEdge` to avoid doing any extra work nor allocations. 
+* It maintains a list of vertices on each add or update of a edge so that in `BellmanFord` we know if it's a existing vertex, how large the maps need to be and etc.
 
 #### To Do
 * Enhancing Peak Network Traffic Prediction via Time-Series Decomposition https://arxiv.org/pdf/2303.13529.pdf
