@@ -19,6 +19,7 @@ type Graph struct {
 
 func NewGraph() *Graph {
 	return &Graph{
+		// keep the list of vertices around so we dont need to generate them during path finding
 		vertices: make([]string, 0),
 		edges:    make([]Edge, 0),
 	}
@@ -62,7 +63,6 @@ func (g *Graph) BellmanFord(src string, dst string) ([]string, error) {
 
 	for _, vert := range g.vertices {
 		dist[vert] = math.Inf(1)
-		pred[vert] = ""
 	}
 
 	dist[src] = 0
